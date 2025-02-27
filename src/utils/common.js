@@ -110,15 +110,10 @@ function validatePassword(password) {
   return hasUppercase && hasLowercase && hasSpecialCharacters;
 }
 
-function formatDateForDB(dateStr) {
-  const [day, month, year] = dateStr.split('-');
-  const fullYear = year.length === 2 ? `20${year}` : year;
-  return `${fullYear}-${month}-${day}`;
-}
 
-const validateDate = (date) => {
+const validateDate = (dob) => {
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(date)) {
+  if (!dateRegex.test(dob)) {
       return { error: 'Invalid date format. Please use yyyy-mm-dd.' };
   }
   return null;
@@ -166,7 +161,6 @@ module.exports = {
   checkPhoneExistOrNot,
   validatePassword,
   multerErrorHandler,
-  formatDateForDB,
   validateDate,
     validateTime,
     convertTo24HrFormat,

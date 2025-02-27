@@ -9,7 +9,6 @@ const {
   checkEmailExistOrNot,
   validatePassword,
   validateEmail,
-  formatDateForDB,
   validatePhone,
   generateOTP
 } = require("../utils/common");
@@ -63,13 +62,6 @@ router.post("/", async (req, res) => {
       });
     }
 
-    if (!formatDateForDB(dob)) {
-      return res.status(400).json({
-        error: "Invalid date format. Please enter a valid date ",
-        status: false,
-      });
-    }
-
 
     const emailExists = await checkEmailExistOrNot(
       role === "patient" ? TABLE.PATIENTS_TABLE : TABLE.DOCTORS_TABLE,
@@ -98,18 +90,19 @@ router.post("/", async (req, res) => {
 
 
     if (role === "patient") {
-      
-      if (!age || !dob || !address) {
-        return res.status(400).json({
-          error: "Age, Date of Birth, and Address are required for patients",
-          status: false,
-        });
-      }
-
       const patientInsertResult = await pool.query(
         `INSERT INTO ${TABLE.PATIENTS_TABLE} (first_name, last_name, email, phone, password, age, dob, address) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [first_name, last_name, email, phone, hashedPassword, age, dob, address]
+        [
+          first_name,
+          last_name,
+          email,
+          phone,
+          hashedPassword,
+          age || null,
+          dob || null,
+          address || null
+        ]
       );
 
       userId = patientInsertResult[0].insertId;
@@ -667,12 +660,6 @@ router.put("/doctor/:id", authMiddleware, async (req, res) => {
         .json({ error: "Invalid email format", status: false });
     }
 
-    if (updates.dob && !formatDateForDB(updates.dob)) {
-      return res
-        .status(400)
-        .json({ error: "Invalid date format for DOB", status: false });
-    }
-
     if (updates.password) {
       if (!validatePassword(updates.password)) {
         return res.status(400).json({
@@ -765,12 +752,6 @@ router.put("/patient/:id",authMiddleware, async (req, res) => {
       return res
         .status(400)
         .json({ error: "Invalid email format", status: false });
-    }
-
-    if (!formatDateForDB(dob)) {
-      return res
-        .status(400)
-        .json({ error: "Invalid date format for DOB", status: false });
     }
 
  
