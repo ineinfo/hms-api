@@ -19,10 +19,10 @@ router.post('/', authMiddleware, async (req, res) => {
         const userId = req.user_id;
 
         // Collect booking data from the request body
-        const { first_name, last_name, email, phone, age, dob, address, doctor, specialty, date, time , amount } = req.body;
+        const { first_name, last_name, email, phone, age, dob, address, doctor, speciality, date, time , amount } = req.body;
 
         // Validate that all necessary data is provided
-        if (!first_name || !last_name || !email || !phone || !age || !dob || !address || !doctor || !specialty || !date || !time ||!amount) {
+        if (!first_name || !last_name || !email || !phone || !age || !dob || !address || !doctor || !speciality || !date || !time) {
             return res.status(400).json({ error: 'All fields are required', status: false });
         }
 
@@ -54,9 +54,9 @@ router.post('/', authMiddleware, async (req, res) => {
         // // Insert booking into the database
         // const [results] = await pool.query(`
         //     INSERT INTO ${TABLE.BOOKING_TABLE} 
-        //     (first_name, last_name, email, phone, age, dob, address, doctor, specialty, patient_id, date_time,amount) 
+        //     (first_name, last_name, email, phone, age, dob, address, doctor, speciality, patient_id, date_time,amount) 
         //     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`, 
-        //     [first_name, last_name, email, phone, age, dob, address, doctor, specialty, userId, appointmentDatetime,amount]);
+        //     [first_name, last_name, email, phone, age, dob, address, doctor, speciality, userId, appointmentDatetime,amount]);
 
         //check doctor_id in doctor
        // Split the doctor name into first and last names
@@ -84,9 +84,9 @@ const doctorId = doctorResults[0].doctor_id;
         // Insert booking into the database
         const [results] = await pool.query(`
             INSERT INTO ${TABLE.BOOKING_TABLE} 
-            (first_name, last_name, email, phone, age, dob, address, doctor, specialty, patient_id, date_time, amount) 
+            (first_name, last_name, email, phone, age, dob, address, doctor, speciality, patient_id, date_time, amount) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
-            [first_name, last_name, email, phone, age, dob, address, doctorId, specialty, userId, appointmentDatetime, amount]);
+            [first_name, last_name, email, phone, age, dob, address, doctorId, speciality, userId, appointmentDatetime, amount]);
 
 
 
@@ -113,7 +113,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
         const bookingId = req.params.id;
 
         // Collect updated booking data from the request body
-        const { first_name, last_name, email, phone, age, dob, address, doctor, specialty, date, time, amount } = req.body;
+        const { first_name, last_name, email, phone, age, dob, address, doctor, speciality, date, time, amount } = req.body;
 
         // Validate booking ID ownership
         const [booking] = await pool.query(`
@@ -129,7 +129,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
         }
 
         // Validate input data
-        if (!first_name || !last_name || !email || !phone || !age || !dob || !address || !doctor || !specialty || !date || !time || !amount) {
+        if (!first_name || !last_name || !email || !phone || !age || !dob || !address || !doctor || !speciality || !date || !time || !amount) {
             return res.status(400).json({ error: 'All fields are required', status: false });
         }
 
@@ -160,10 +160,10 @@ router.put('/:id', authMiddleware, async (req, res) => {
         // Update booking in the database
         await pool.query(`
             UPDATE ${TABLE.BOOKING_TABLE} 
-            SET first_name = ?, last_name = ?, email = ?, phone = ?, age = ?, dob = ?, address = ?, doctor = ?, specialty = ?, date_time = ?, amount = ?, 
+            SET first_name = ?, last_name = ?, email = ?, phone = ?, age = ?, dob = ?, address = ?, doctor = ?, speciality = ?, date_time = ?, amount = ?, 
             updated_at = NOW()                                     
             WHERE id = ? AND patient_id = ?
-        `, [first_name, last_name, email, phone, age, dob, address, doctor, specialty, appointmentDatetime, amount, bookingId, userId]);
+        `, [first_name, last_name, email, phone, age, dob, address, doctor, speciality, appointmentDatetime, amount, bookingId, userId]);
 
         // Return a success message
         return res.status(200).json({
