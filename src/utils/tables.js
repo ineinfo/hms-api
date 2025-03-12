@@ -8,7 +8,9 @@ const TABLES = {
     BOOKING_TABLE:'booking',
     PRESCRIPTION_TABLE: 'Prescription' ,
     CONTACTINQUIRY_TABLE: 'contactinquiry',
-    FEEDBACK_TABLE:'feedback'
+    FEEDBACK_TABLE:'feedback',
+    FAQ_TABLE:'faq',
+    PAGES_TABLE:'pages',
 
 
     

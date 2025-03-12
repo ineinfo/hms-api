@@ -10,6 +10,9 @@ const bookingRoutes = require('./routes/bookingRoutes')
 const prescriptionRoutes = require('./routes/prescriptionRoutes')
 const contactInquiryRoutes = require('./routes/contactInquiryRoutes')
 const feedbackRoutes = require('./routes/feedbackRoutes')
+const faqRoutes = require('./routes/faqRoutes')
+const pagesRoutes = require('./routes/pagesRoutes')
+
 
 
 
@@ -45,6 +48,9 @@ app.use('/api/book-appointment',bookingRoutes)
 app.use('/api/prescription',prescriptionRoutes)
 app.use('/api/contact-inquiry',contactInquiryRoutes)
 app.use('/api/feedback',feedbackRoutes)
+app.use('/api/faq',faqRoutes)
+app.use('/api/pages',pagesRoutes)
+
 
 
 
