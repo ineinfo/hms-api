@@ -12,6 +12,7 @@ const {
   validatePhone,
   generateOTP
 } = require("../utils/common");
+const { uploadProfile } = require("../utils/multerConfig");
 const router = express.Router();
 const authMiddleware = require("../utils/authMiddleware");
 
@@ -19,7 +20,7 @@ const API_SECRET_KEY = process.env.API_SECRET_KEY;
 const API_TOKEN_EXPIRESIN = process.env.API_TOKEN_EXPIRESIN;
 
 // Register both doctor, patients - eithout booking code
-router.post("/", async (req, res) => {
+router.post("/", uploadProfile, async (req, res) => {
   try {
     const {
       role,
@@ -34,6 +35,8 @@ router.post("/", async (req, res) => {
       doctor_id,
       speciality,
       fees,
+      description,
+      experience // Added experience field
     } = req.body;
 
 
@@ -88,6 +91,11 @@ router.post("/", async (req, res) => {
     let userId = null;
     let userDetails = null;
 
+ 
+    const baseUrl = req.protocol + '://' + req.get('host') + '/uploads/profile/';
+    const image_urls = req.files.map(file => baseUrl + file.filename);
+    const image_url = image_urls.length > 0 ? image_urls[0] : '';
+
 
     if (role === "patient") {
       const patientInsertResult = await pool.query(
@@ -141,8 +149,8 @@ router.post("/", async (req, res) => {
       }
 
       const doctorInsertResult = await pool.query(
-        `INSERT INTO ${TABLE.DOCTORS_TABLE} (first_name, last_name, email, phone, password, dob, age, doctor_id, speciality, fees) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO ${TABLE.DOCTORS_TABLE} (first_name, last_name, email, phone, password, dob, age, doctor_id, speciality, fees, image_url, description, experience) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           first_name,
           last_name,
@@ -154,6 +162,9 @@ router.post("/", async (req, res) => {
           doctor_id,
           speciality,
           fees,
+          image_url,
+          description,
+          experience // Added experience field
         ]
       );
 
@@ -170,6 +181,9 @@ router.post("/", async (req, res) => {
         doctor_id,
         speciality,
         d_id: userId,
+        image_url,
+        description,
+        experience // Added experience field
       };
     } else {
       return res.status(400).json({
@@ -602,7 +616,7 @@ router.delete("/patients/:id", authMiddleware, async (req, res) => {
 //   }
 // });
 
-router.put("/doctor/:id", authMiddleware, async (req, res) => {
+router.put("/doctor/:id", authMiddleware, uploadProfile, async (req, res) => {
   try {
     const id = req.params.id;
 
@@ -633,12 +647,20 @@ router.put("/doctor/:id", authMiddleware, async (req, res) => {
       "doctor_id",
       "speciality",
       "fees",
+      "description",
+      "image_url",
+      "experience" // Added experience field
     ];
     const updates = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field];
       }
+    }
+
+    if (req.files && req.files.length > 0) {
+      const baseUrl = req.protocol + '://' + req.get('host') + '/uploads/profile/';
+      updates.image_url = baseUrl + req.files[0].filename;
     }
 
     if (!Object.keys(updates).length) {

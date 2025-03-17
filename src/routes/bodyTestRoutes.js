@@ -1,4 +1,3 @@
-
 const express = require('express');
 const TABLE = require('../utils/tables')
 const pool = require('../utils/db');
@@ -12,7 +11,7 @@ const {multerErrorHandler} = require('../utils/common');
 router.post('/', uploadTest,multerErrorHandler, authMiddleware,async (req, res) => {
     try {
 
-        const {title} = req.body;
+        const {title, description, price, offer} = req.body;
 
         if ( !title) {
             return res.status(400).json({ error: 'Title field required', status: false });
@@ -40,7 +39,7 @@ router.post('/', uploadTest,multerErrorHandler, authMiddleware,async (req, res) 
     // ];
 
 
-        await pool.query(`INSERT INTO ${TABLE.BODYTEST_TABLE} (title,image_url) VALUES (?,?)`, [title,image_url]);
+        await pool.query(`INSERT INTO ${TABLE.BODYTEST_TABLE} (title, description, price, offer, image_url) VALUES (?, ?, ?, ?, ?)`, [title, description, price, offer, image_url]);
                 
         return res.status(201).json({ message: 'Record Successfully Created', status: true });
 
@@ -76,52 +75,38 @@ router.get('/:id?', async (req, res) => {
 // Update
 router.put('/:id', uploadTest, multerErrorHandler, authMiddleware, async (req, res) => {
     try {
-        const { id } = req.params; // Medicine ID
-        const { title } = req.body; // Parse form-data title field
+        const { id } = req.params;
+        const { title, description, price, offer } = req.body;
 
-        // Validate input
-        if (!title) {
-            return res.status(400).json({ error: 'Title field is required', status: false });
-        }
-
-        // Check if the medicine exists
-        const [existingMedicine] = await pool.query(
-            `SELECT * FROM ${TABLE.BODYTEST_TABLE} WHERE status = 1 and id = ?`, 
-            [id]
-        );
+        const [existingMedicine] = await pool.query(`SELECT * FROM ${TABLE.BODYTEST_TABLE} WHERE status = 1 and id = ?`, [id]);
         if (existingMedicine.length === 0) {
             return res.status(404).json({ error: 'Record not found', status: false });
         }
 
-        // Check for duplicate title
-        const [duplicateTitle] = await pool.query(
-            `SELECT * FROM ${TABLE.BODYTEST_TABLE} WHERE status = 1 and title = ? AND id != ?`, 
-            [title, id]
-        );
+        const [duplicateTitle] = await pool.query(`SELECT * FROM ${TABLE.BODYTEST_TABLE} WHERE status = 1 and title = ? AND id != ?`, [title, id]);
         if (duplicateTitle.length > 0) {
             return res.status(400).json({ error: 'Record with the same title already exists', status: false });
         }
 
-  
+        const baseUrl = req.protocol + '://' + req.get('host') + '/uploads/bodytest/';
+        const image_urls = req.files.map(file => baseUrl + file.filename);
+        const image_url = image_urls.length > 0 ? image_urls[0] : existingMedicine[0].image_url;
 
-        const baseUrl = req.protocol + '://' + req.get('host') + '/uploads/bodytest/'; // Ensure trailing slash
-const image_urls = req.files.map(file => baseUrl + file.filename);
-const image_url = image_urls.length > 0 ? image_urls[0] : existingMedicine[0].image_url;
+        const updatedTitle = title || existingMedicine[0].title;
+        const updatedDescription = description || existingMedicine[0].description;
+        const updatedPrice = price || existingMedicine[0].price;
+        const updatedOffer = offer || existingMedicine[0].offer;
 
-
-
-    //     const baseUrl = req.protocol + '://' + req.get('host') + '/uploads/bodytest/';
-    // const image_urls = req.files.map(file => baseUrl + file.filename);
-    // const image_url = image_urls.length > 0 ? image_urls[0] : '';
-
-        // Update the medicine
         await pool.query(
             `UPDATE ${TABLE.BODYTEST_TABLE} 
              SET title = ?, 
+                 description = ?, 
+                 price = ?, 
+                 offer = ?, 
                  image_url = ?, 
                  updated_at = NOW() 
              WHERE id = ?`,
-            [title, image_url, id]
+            [updatedTitle, updatedDescription, updatedPrice, updatedOffer, image_url, id]
         );
 
         return res.status(200).json({ message: 'Record Successfully Updated', status: true });

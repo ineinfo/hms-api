@@ -114,7 +114,14 @@ const uploadTest = multer({
   limits: { fileSize: 40 * 1024 * 1024 },  // 40MB max file size
 }).any();
 
+const uploadProfile = multer({
+  storage: getStorage("profile"),  // Bodytest folder
+  fileFilter: fileFilter,
+  limits: { fileSize: 40 * 1024 * 1024 },  // 40MB max file size
+}).any();
+
 module.exports = {
   uploadMedicine,
   uploadTest,
+  uploadProfile
 };
